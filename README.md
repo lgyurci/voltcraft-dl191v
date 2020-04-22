@@ -1,2 +1,2 @@
 # vdl191v
-A small implementation for Voltcraft DL-191V on linux
+A small (but probably the only) implementation for Voltcraft DL-191V on linux
