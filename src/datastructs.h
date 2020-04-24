@@ -2,7 +2,7 @@
 struct confdata { //Ezt az ötletet https://github.com/mildis/vdl120 -ből loptam (szerintem zseniális, én ezerszer bonyolultabban csináltam volna meg), aki egy szintén voltcraft hőmérsékletmérő vezérlését kódolta le. Ez a projekt a kommunikáció dekódolásában is sokat segített, máshoz viszont nem használtam fel (alapból az elavultabb, usb.h-t használja libusb helyett)
     const int startsignal = 206; //config start/stop jel, mindig 206 (hex: 0xce)
     int datacount = 16000; //Rögzítendő adatmennyiség maximális száma (1 mérési adat 2 byte-ban tárolódik, ami rendben van, mert 30V a műszer méréshatára, és így max 65V-ig tudna adatot tárolni)
-    int idk = 0; //Mindig 0
+    int idk = 0; //Lekérdezéskor ez a rögzített adatmennyiség, konifg íráskor értelemszerűen ez 0
     int freq = 2; //rögzítés időköze másodpercben, 0: 0.0025s-t jelent (400 Hz)
     int year = 2020; //konfiguráció kiírásának éve
     int alarm_low1 = 1086324736; //Ez valahogy a riasztás alsó feszültséghatárát kódolja, sajnos nem jöttem rá hogy hogyan, szóval egy érvényes értéken hagytam
@@ -23,7 +23,7 @@ struct confdata { //Ezt az ötletet https://github.com/mildis/vdl120 -ből lopta
 
 struct b2header{
     char id; //adatletöltés/konfigurácó kérése esetén: 0, konfiguráció írásakor: 1, az eszköz válaszainál: 2 / adatletöltés esetén érdemesebb a 3 elemű headert használni
-    short int dat; //konfig írásakor: 64, konfig lekérésekor: 272, az eszköz válaszainál 0, kivéve a konfiguráció lekérésénél, mert ott az első header itt tartalmazza, hogy hány byte adat keletkezett a legutóbbi méréssel, tehát hogy mennyit kell letölteni (és a letöltökkeből mennyi használható, és mennyi memóriaszemét)
+    unsigned short int dat; //konfig írásakor: 64, konfig lekérésekor: 272, az eszköz válaszainál 0, kivéve a konfiguráció lekérésénél, mert ott az első header itt tartalmazza, hogy hány byte adat keletkezett a legutóbbi méréssel, tehát hogy mennyit kell letölteni (és a letöltökkeből mennyi használható, és mennyi memóriaszemét)
 };
 
 struct b3header{ //csak adatletöltéskor és konfig íráskor hasznos

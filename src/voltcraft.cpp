@@ -3,6 +3,8 @@
 #include "voltcraft.h"
 #include "datastructs.h"
 
+#include <iostream>
+
 voltcraft::voltcraft(int vid/*vendor id*/, int pid/*product id*/){
     v = vid;
     p = pid;
@@ -77,13 +79,13 @@ int voltcraft::configure (int datacount, int freq, std::tm *time, int ledmode, b
     cfg.sec = time->tm_sec;
     unsigned char ledchar = (unsigned char) ledmode;
     unsigned char frmode;
-    if (freq <= 2){
+    if (freq <= 4){
         frmode = 0;
     }
-    if (freq > 2 && freq <= 5){
+    if (freq > 4 && freq <= 6){
         frmode = 32;
     }
-    if (freq > 5 && freq <= 10){
+    if (freq > 6 && freq <= 10){
         frmode = 64;
     }
     if (freq > 10){
@@ -162,8 +164,8 @@ int voltcraft::configure (int datacount, int freq, std::tm *time, int ledmode, b
 }
 
 
-int voltcraft::download(short int *results, confdata &cfdata){ //visszatérési értéke a letöltött mérési adatmennyiség, azaz a results tömb hossza
-        libusb_device_handle *dev_handle = NULL; //eszköz
+int voltcraft::download(unsigned short int **results, confdata &cfdata){ //visszatérési értéke a letöltött mérési adatmennyiség, azaz a results tömb hossza
+    libusb_device_handle *dev_handle = NULL; //eszköz
     libusb_context *ctx; //kontextus
     libusb_init(&ctx);
     libusb_device **devs; //eszközlista
@@ -221,19 +223,28 @@ int voltcraft::download(short int *results, confdata &cfdata){ //visszatérési 
     confsignal.d2 = 1;
     libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&dread,0);
     libusb_bulk_transfer(dev_handle,130,(unsigned char*)&downloadable,3,&dread,0);
-    confdata liveconfig;
-    libusb_bulk_transfer(dev_handle,130,(unsigned char*)&liveconfig,64,&dread,0);
+    libusb_bulk_transfer(dev_handle,130,(unsigned char*)&cfdata,64,&dread,0);
     libusb_bulk_transfer(dev_handle,130,NULL,0,NULL,0); //a konfiguráció letöltése állítja le egyben a mérést. A konfig letöltése után az eszköz még küld egy üres packetet, mert olyan kedve van olyankor
 
     confsignal.id=0;
     confsignal.d1=0;
     confsignal.d2=1;
+    downloadable.dat = cfdata.idk*2;
     int requestcount = downloadable.dat/4096;
     int blokkremain = downloadable.dat % 4096;
     int rems = blokkremain/64;
+    int datain = 0;
+    b2header response;
     if (blokkremain % 64 != 0 && blokkremain != 0){
         rems++;
     }
+    int total64;
+    if (downloadable.dat%64 != 0){
+        total64 = downloadable.dat/64 + 1;
+    } else {
+        total64 = downloadable.dat;
+    }
+    unsigned short int *ddata = new unsigned short int [total64*32];
     for (int i = 0; i <= requestcount; i++){
         confsignal.id=0;
         confsignal.d1=i;
@@ -241,33 +252,39 @@ int voltcraft::download(short int *results, confdata &cfdata){ //visszatérési 
             confsignal.d2 = rems;
             int db = blokkremain/512;
             int last = rems-db;
+            libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&dread,0);
+            libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,NULL,0);
             for (int j = 0; j < db; j++){
-                //bulk-read 512 byte
+                dread = 0;
+                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),512,&dread,0);
+                datain += dread;
             }
             if (last != 0){
-                //bulk-read last*64 byte
+                dread = 0;
+                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),last*64,&dread,0);
+                datain += dread;
             }
         } else {
             confsignal.d2 = 64;
+            libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&dread,0);
+            libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,NULL,0);
             for (int j = 0; j < 8; j++){
-                //bulk-read 512 byte
+                dread = 0;
+                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),512,&dread,0);
+                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,NULL,0);
+                datain += dread;
             }
         }
-        libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&dread,0);
     }
-    libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&dread,0);
-    short int rdt[32];
-    libusb_bulk_transfer(dev_handle,130,confsignal,3,&written,0);
-    cout << "header received: " << (int) confsignal[0] << " " << (int) confsignal[1] << " " << (int) confsignal[2] << " " << endl;
-    libusb_bulk_transfer(dev_handle,130,(unsigned char*) &rdt,64,&written,0);
-    cout << written << " bytes were read:" << endl;
-    for (int i = 0; i < written/2; i++){
-        cout << rdt[i] << " ";
-    }
-    cout << endl;
     libusb_bulk_transfer(dev_handle,130,NULL,0,NULL,0);
     libusb_control_transfer(dev_handle,64,2,4,0,NULL,0,0);
     libusb_release_interface(dev_handle,0);
     libusb_close(dev_handle);
     libusb_exit(ctx);
+    *results = ddata;
+    return downloadable.dat/2;
+}
+
+static void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool instant = false){
+    
 }

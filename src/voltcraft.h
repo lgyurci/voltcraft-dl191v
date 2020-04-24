@@ -10,6 +10,6 @@ class voltcraft{
         voltcraft(int v /*Vendor id*/, int p /*Product id*/);
         ~voltcraft();
         int configure (int datacount, int freq, std::tm *time, int ledmode, bool instant = false);
-        int download(short int *results, confdata &cfdata);
-        void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool instant = false);
+        int download(unsigned short int **results, confdata &cfdata);
+        static void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool instant = false);
 };
