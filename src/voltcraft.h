@@ -2,6 +2,8 @@
 #include <libusb-1.0/libusb.h>
 #include <ctime>
 #include "datastructs.h"
+#include <string.h>
+#include <iostream>
 
 class voltcraft{
     private:
@@ -9,7 +11,7 @@ class voltcraft{
     public:
         voltcraft(int v /*Vendor id*/, int p /*Product id*/);
         ~voltcraft();
-        int configure (int datacount, int freq, std::tm *time, int ledmode, bool instant = false);
+        int configure (int datacount, int freq, std::tm *time, int ledmode, bool instant);
         int download(unsigned short int **results, confdata &cfdata);
-        static void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool instant = false);
+        static void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool instant, bool force);
 };

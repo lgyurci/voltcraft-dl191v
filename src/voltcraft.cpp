@@ -2,8 +2,10 @@
 #include <ctime>
 #include "voltcraft.h"
 #include "datastructs.h"
-
+#include <string.h>
 #include <iostream>
+
+using namespace std;
 
 voltcraft::voltcraft(int vid/*vendor id*/, int pid/*product id*/){
     v = vid;
@@ -285,6 +287,18 @@ int voltcraft::download(unsigned short int **results, confdata &cfdata){ //vissz
     return downloadable.dat/2;
 }
 
-static void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool instant = false){
-    
+static void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool instant, bool force){
+    if (datacount > 32000 || datacount < 1){
+        string ex;
+        if (force) ex = "Datacount out of range. Range: [1,32000], got: " + to_string(datacount) + " (could not force)";
+        else ex = "Datacount out of range. Range: [1,32000], got: " + to_string(datacount);
+        throw ex;
+    }
+    if (freq < 0){
+        string ex;
+        if (force) ex = "Measure interval out of range. Range: [0,...], got: " + to_string(freq) + " (could not force)";
+        else ex = "Measuring interval: bad value, got: " + to_string(freq);
+        throw ex;
+    }
+    if (freq != 0 || freq != 2 ||freq != 5 ||freq != 10 ||freq != 30 ||freq != 60 ||)
 }
