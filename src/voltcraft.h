@@ -13,5 +13,4 @@ class voltcraft{
         ~voltcraft();
         int configure (int datacount, int freq, std::tm *time, int ledmode, bool instant);
         int download(unsigned short int **results, confdata &cfdata);
-        static void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool instant, bool force);
 };

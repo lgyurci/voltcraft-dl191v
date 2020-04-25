@@ -13,20 +13,39 @@ string argmis(string opt){
   return (string) "Error: missing argument for option '" + opt + "'";
 }
 
+void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool force){
+    if (datacount > 32000 || datacount < 1){
+        string ex;
+        if (force) ex = "Datacount out of range. Range: [1,32000], got: " + to_string(datacount) + " (could not force)";
+        else ex = "Datacount out of range. Range: [1,32000], got: " + to_string(datacount);
+        throw ex;
+    }
+    if (freq < 0){
+        string ex;
+        if (force) ex = "Measure interval out of range. Range: [0,...], got: " + to_string(freq) + " (could not force)";
+        else ex = "Measuring interval: bad value, got: " + to_string(freq);
+        throw ex;
+    }
+    if (freq != 0 && freq != 2 && freq != 5 && freq != 10 && freq != 30 && freq != 60 && freq != 300 && freq != 600 && freq != 1800 && freq != 3600 && freq != 7200 && freq != 10800 && freq != 21600 && freq != 43200 && freq != 86400 && !force){
+        string ex;
+        ex = "Measuring interval: bad value, got: " + to_string(freq) + " - use -f to override, and if you like living on the edge";
+        throw ex;
+    }
+    if (ledmode < 0){
+        string ex;
+        if (force) ex = "Led blink interval out of range. Range: [0,...], got: " + to_string(ledmode) + " (could not force)";
+        else ex = "Led blink interval: bad value, got: " + to_string(freq);
+        throw ex;
+    }
+    if (ledmode != 10 && ledmode != 20 && ledmode != 30 && !force){
+        string ex;
+        ex = "Led blink interval: bad value, got: " + to_string(freq) + " - use -f to override, and if you like living on the edge";
+        throw ex;
+    }
+}
+
 int main(int argc, char *argv[]){
-/*        voltcraft vdl191v(vid,pid);
-        std::time_t t = std::time(0);
-        std::tm* now = std::localtime(&t);
-      //  vdl191v.configure(32000,2,now,10,false);
-        confdata livec;
-        unsigned short int *data;
-        int cunt = vdl191v.download(&data,livec);
-        cout << cunt << " data downloaded:" << endl;
-        for (int i = 0; i < cunt; i++){
-            cout << data[i] << " ";
-        }
-        cout << endl;
-        delete[] data;*/
+
         string lend = "\n";
         string help = 
         lend +
@@ -34,7 +53,7 @@ int main(int argc, char *argv[]){
         lend + 
         (string) "A small program for managing the Voltcraft DL-191V voltage meter and data logger\n" +
         lend +
-        (string) "Avaiable commands:\n" +
+        (string) "Available commands:\n" +
         (string) "setup - Sets up the datalogger with the given settings. Avaiable options: -c,-p,-t,-l,-i,-f\n" +
         (string) "download - Downloads data from the device. Avaiable options: -s,-o,--no-header,--no-time-stamps\n" +
         (string) "help - Without arguments: display this message. With argument: display help for the given command\n" +
@@ -147,7 +166,7 @@ int main(int argc, char *argv[]){
                   s >> dco;
                 } else {
                   cout << argmis("-c") << endl;
-                  return 1;
+                  return 2;
                 }
               } else if (strcmp(argv[i],"-p") == 0){
                 if (i+1 < argc){
@@ -155,14 +174,39 @@ int main(int argc, char *argv[]){
                   s >> inte;
                 } else {
                   cout << argmis("-p") << endl;
-                  return 1;
+                  return 2;
                 }
               } else if (strcmp(argv[i],"-i") == 0){
                 instant = true;
+              } else if (strcmp(argv[i],"-f") == 0){
+                force = true;
+              } else if (strcmp(argv[i],"-l") == 0){
+                if (i+1 < argc){
+                  stringstream s(argv[++i]);
+                  s >> ledmode;
+                } else {
+                  cout << argmis("-l") << endl;
+                  return 2;
+                }
+              } else {
+                cout << "Error: option '" << argv[i] << "' is unknown for command 'setup'" << endl;
+                return 2;
               }
-              
+            }
+            try{
+              validateConf(dco,inte,now,ledmode,force);
+            } catch(string ex){
+              cout << ex << endl;
+              return 2;
             }
             voltcraft vdl191v(vid,pid);
+            try{
+              vdl191v.configure(dco,inte,now,ledmode,instant);
+            } catch (string ex){
+              cout << ex << endl;
+              return 3;
+            }
+            return 0;
           } else {
             cout << argv[1] << " is not a valid command. See 'vdl191v help'." << endl;
             return 1;

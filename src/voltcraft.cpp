@@ -35,32 +35,26 @@ int voltcraft::configure (int datacount, int freq, std::tm *time, int ledmode, b
     }
     libusb_free_device_list(devs, 1);
     if (!found){
-        char ex[] = "Device not found. Is it connected?";
-        libusb_release_interface(dev_handle,0);
-        libusb_close(dev_handle);
+        string ex = "Device not found. Is it connected?";
         libusb_exit(ctx);
         throw ex;
     }
     dev_handle = libusb_open_device_with_vid_pid(ctx,v,p);
     if (dev_handle == NULL){
-        char ex[] = "Device is found, but opening it failed. Do you have the permission to do so?";
-        libusb_release_interface(dev_handle,0);
-        libusb_close(dev_handle);
+        string ex = "Device is found, but opening it failed. Do you have the permission to do so?";
         libusb_exit(ctx);
         throw ex;
     }
     if (libusb_kernel_driver_active(dev_handle,0) == 1){
         if (libusb_detach_kernel_driver(dev_handle,0) != 0){
-            char ex[] = "Could not detach kernel driver assigned to the device. This may be a permission issue.";
-            libusb_release_interface(dev_handle,0);
+            string ex = "Could not detach kernel driver assigned to the device. This may be a permission issue.";
             libusb_close(dev_handle);
             libusb_exit(ctx);
             throw ex;
         }
     }
     if (libusb_claim_interface(dev_handle,0) != 0){
-        char ex[] = "Claiming USB interface failed. Check if you have the correct permissions to execute this task.";
-        libusb_release_interface(dev_handle,0);
+        string ex = "Claiming USB interface failed. Check if you have the correct permissions to execute this task.";
         libusb_close(dev_handle);
         libusb_exit(ctx);
         throw ex;
@@ -145,14 +139,14 @@ int voltcraft::configure (int datacount, int freq, std::tm *time, int ledmode, b
     int r1 = libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&written,0);
     int r2 = libusb_bulk_transfer(dev_handle,2,(unsigned char*)(&cfg),64,&written,0);
     if (r1 != 0 | r2 != 0){
-        char ex[] = "Bulk write failed";
+        string ex = "Bulk write failed";
         libusb_release_interface(dev_handle,0);
         libusb_close(dev_handle);
         libusb_exit(ctx);
         throw ex;
     }
     if (libusb_bulk_transfer(dev_handle, 130, &returncode, 1, &written, 0) != 0){
-        char ex[] = "Bulk read failed";
+        string ex = "Bulk read failed";
         libusb_release_interface(dev_handle,0);
         libusb_close(dev_handle);
         libusb_exit(ctx);
@@ -180,32 +174,26 @@ int voltcraft::download(unsigned short int **results, confdata &cfdata){ //vissz
     }
     libusb_free_device_list(devs, 1);
     if (!found){
-        char ex[] = "Device not found. Is it connected?";
-        libusb_release_interface(dev_handle,0);
-        libusb_close(dev_handle);
+        string ex = "Device not found. Is it connected?";
         libusb_exit(ctx);
         throw ex;
     }
     dev_handle = libusb_open_device_with_vid_pid(ctx,v,p);
     if (dev_handle == NULL){
-        char ex[] = "Device is found, but opening it failed. Do you have the permission to do so?";
-        libusb_release_interface(dev_handle,0);
-        libusb_close(dev_handle);
+        string ex = "Device is found, but opening it failed. Do you have the permission to do so?";
         libusb_exit(ctx);
         throw ex;
     }
     if (libusb_kernel_driver_active(dev_handle,0) == 1){
         if (libusb_detach_kernel_driver(dev_handle,0) != 0){
-            char ex[] = "Could not detach kernel driver assigned to the device. This may be a permission issue.";
-            libusb_release_interface(dev_handle,0);
+            string ex = "Could not detach kernel driver assigned to the device. This may be a permission issue.";
             libusb_close(dev_handle);
             libusb_exit(ctx);
             throw ex;
         }
     }
     if (libusb_claim_interface(dev_handle,0) != 0){
-        char ex[] = "Claiming USB interface failed. Check if you have the correct permissions to execute this task.";
-        libusb_release_interface(dev_handle,0);
+        string ex = "Claiming USB interface failed. Check if you have the correct permissions to execute this task.";
         libusb_close(dev_handle);
         libusb_exit(ctx);
         throw ex;
@@ -285,20 +273,4 @@ int voltcraft::download(unsigned short int **results, confdata &cfdata){ //vissz
     libusb_exit(ctx);
     *results = ddata;
     return downloadable.dat/2;
-}
-
-static void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool instant, bool force){
-    if (datacount > 32000 || datacount < 1){
-        string ex;
-        if (force) ex = "Datacount out of range. Range: [1,32000], got: " + to_string(datacount) + " (could not force)";
-        else ex = "Datacount out of range. Range: [1,32000], got: " + to_string(datacount);
-        throw ex;
-    }
-    if (freq < 0){
-        string ex;
-        if (force) ex = "Measure interval out of range. Range: [0,...], got: " + to_string(freq) + " (could not force)";
-        else ex = "Measuring interval: bad value, got: " + to_string(freq);
-        throw ex;
-    }
-    if (freq != 0 || freq != 2 ||freq != 5 ||freq != 10 ||freq != 30 ||freq != 60 ||)
 }
