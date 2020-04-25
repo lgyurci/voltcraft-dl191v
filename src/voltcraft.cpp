@@ -96,7 +96,7 @@ int voltcraft::configure (int datacount, int freq, std::tm *time, int ledmode, b
     }
     unsigned char Q = ledchar | frmode | alarmchar;
     cfg.Q = Q;
-/*    char confname[16];
+/*   char confname[16];
     bool stre = false;
     for (int i = 0; i < 16; i++){
         if (name[i] == '\0'){
