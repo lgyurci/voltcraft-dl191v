@@ -13,13 +13,13 @@ logger::logger(confdata &config, unsigned short int *dat,bool timestamps, bool h
     hr = header;
     sd = standard;
 }
-logger::~logger(){
+logger::~logger(){ // Ezt megtehetjük, mert úgyis csak new-val létrehozott tömböt kap
     delete[] data;
 }
 ofstream &operator <<(ofstream &of, const logger &log){
-    double inte;
-    if (log.cfg->freq == 0) inte = 0.0025; else inte = log.cfg->freq;
-    if (log.hr){
+    double inte; //intervallum
+    if (log.cfg->freq == 0) inte = 0.0025; else inte = log.cfg->freq; //0 -> 400Hz-t jelent
+    if (log.hr){ //ez igazából csak mechanikus szenvedés, és egyértelmű, szóval nem dokumentálom
         of << "Measure_start:'" << log.cfg->year << "-" << setfill('0') << setw(2) << (int) log.cfg->month << "-" << setfill('0') << setw(2) << (int) log.cfg->day << " "<< setfill('0') << setw(2)  << (int) log.cfg->hour << ":" << setfill('0') << setw(2) << (int) log.cfg->min << ":" << setfill('0') << setw(2) << (int) log.cfg->sec << "'" 
         ",Interval(s):"<< inte << ",Recorded_data:" << log.cfg->idk << endl;
         if (log.sd) {
