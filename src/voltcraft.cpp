@@ -234,7 +234,7 @@ int voltcraft::download(unsigned short int **results, confdata &cfdata){ //vissz
     } else {
         total64 = downloadable.dat;
     }
-    unsigned short int *ddata = new unsigned short int [total64*32];
+    unsigned short int *ddata = new unsigned short int [downloadable.dat];
     for (int i = 0; i <= requestcount; i++){
         confsignal.id=0;
         confsignal.d1=i;
@@ -260,9 +260,10 @@ int voltcraft::download(unsigned short int **results, confdata &cfdata){ //vissz
             libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,NULL,0);
             for (int j = 0; j < 8; j++){
                 dread = 0;
+                int bread = 0;
                 libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),512,&dread,0);
-                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,NULL,0);
-                datain += dread;
+                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,&bread,0);
+                datain += dread/2;
             }
         }
     }
