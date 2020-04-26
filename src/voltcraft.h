@@ -1,5 +1,5 @@
 #pragma once
-#include <libusb-1.0/libusb.h> //ezt nem hiszem hogy meg kell indokolnom
+#include <libusb-1.0/libusb.h>
 #include "datastructs.h"
 #include <ctime>
 #include <iostream> //string miatt kell
