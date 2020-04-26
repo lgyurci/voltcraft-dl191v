@@ -55,6 +55,7 @@ Note: This will stop the measurement.
 
 
 **Options:**
+
    -s                Print output to stdout as well
    
    -o                Specify output file. Default: data.dsv
