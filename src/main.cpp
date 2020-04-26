@@ -1,9 +1,10 @@
 #include <iostream>
 #include "voltcraft.h"
+#include "logger.h"
 #include <ctime>
 #include <string.h>
 #include <fstream>
-#include <iomanip>
+#include <sstream>
 #define vid 4292
 #define pid 60001
 
@@ -11,6 +12,19 @@ using namespace std;
 
 string argmis(string opt){
   return (string) "Error: missing argument for option '" + opt + "'";
+}
+
+string argbad(string opt){
+  return (string) "Error: bad argument for option '" + opt + "'";
+}
+
+bool isNum(string pn){
+  for (int i = 0; i < pn.length(); i++){
+    if (pn[i] < 48 || pn[i] > 57){
+      return false;
+    }
+  }
+  return true;
 }
 
 void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool force){
@@ -97,52 +111,16 @@ int main(int argc, char *argv[]){
             voltcraft vdl191v(vid,pid);
             confdata livec;
             unsigned short int *data;
-            int count;
             try {
-              count = vdl191v.download(&data,livec);
+              vdl191v.download(&data,livec);
             } catch(string ex){
               cout << ex;
               return 3;
             }
+            logger lg(livec,data,timestamps,header,standard);
             ofstream f;
             f.open(output);
-            double inte;
-            if (livec.freq == 0) inte = 0.0025; else inte = livec.freq;
-            if (header){
-              f << "Measure_start:'" << livec.year << "-" << setfill('0') << setw(2) << (int) livec.month << "-" << setfill('0') << setw(2) << (int) livec.day << " "<< setfill('0') << setw(2)  << (int) livec.hour << ":" << setfill('0') << setw(2) << (int) livec.min << ":" << setfill('0') << setw(2) << (int) livec.sec << "'" 
-              ",Interval(s):"<< inte << ",Recorded_data:" << count << endl;
-              if (standard) {
-                cout << "Measure_start:'" << livec.year << "-" << setfill('0') << setw(2) << (int) livec.month << "-" << setfill('0') << setw(2) << (int) livec.day << " "<< setfill('0') << setw(2)  << (int) livec.hour << ":" << setfill('0') << setw(2) << (int) livec.min << ":" << setfill('0') << setw(2) << (int) livec.sec << "'" 
-              ",Interval(s):"<< inte << ",Recorded_data:" << count << endl;
-              }
-            }
-            if (timestamps) {
-              f << "Time(s)" << "  " << "Voltage(mV)" << endl;
-              if (standard) {
-                cout << "Time(s)" << "  " << "Voltage(mV)" << endl;
-              }
-            } else {
-              f << "Voltage(mV)" << endl;
-              if (standard) {
-                cout << "Voltage(mV)" << endl;
-              }
-            }
-            if(timestamps){
-              for (int i = 0; i < count; i++){
-                f << inte*i << "  " << data[i] << endl;
-                if (standard) {
-                  cout << inte*i << "  " << data[i] << endl;
-                }
-              }
-            } else {
-              for (int i = 0; i < count; i++){
-                f << "  " << data[i] << endl;
-                if (standard) {
-                  cout << "  " << data[i] << endl;
-                }
-              }
-            }
-            delete[] data;
+            f << lg;
             f.close();
             return 0;
           } else if (strcmp(argv[1],"setup") == 0){
@@ -162,16 +140,26 @@ int main(int argc, char *argv[]){
             for (int i = 2; i < argc; i++){
               if (strcmp(argv[i],"-c") == 0){
                 if (i+1 < argc){
-                  stringstream s(argv[++i]);
-                  s >> dco;
+                  if (isNum(argv[i+1])){
+                    stringstream s(argv[++i]);
+                    s >> dco;
+                  } else {
+                    cout << argbad("-c") << endl;
+                    return 2;
+                  }
                 } else {
                   cout << argmis("-c") << endl;
                   return 2;
                 }
               } else if (strcmp(argv[i],"-p") == 0){
                 if (i+1 < argc){
-                  stringstream s(argv[++i]);
-                  s >> inte;
+                  if (isNum(argv[i+1])){
+                    stringstream s(argv[++i]);
+                    s >> dco;
+                  } else {
+                    cout << argbad("-p") << endl;
+                    return 2;
+                  }
                 } else {
                   cout << argmis("-p") << endl;
                   return 2;
@@ -182,8 +170,13 @@ int main(int argc, char *argv[]){
                 force = true;
               } else if (strcmp(argv[i],"-l") == 0){
                 if (i+1 < argc){
-                  stringstream s(argv[++i]);
-                  s >> ledmode;
+                  if (isNum(argv[i+1])){
+                    stringstream s(argv[++i]);
+                    s >> dco;
+                  } else {
+                    cout << argbad("-l") << endl;
+                    return 2;
+                  }
                 } else {
                   cout << argmis("-l") << endl;
                   return 2;
