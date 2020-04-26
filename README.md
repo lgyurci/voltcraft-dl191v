@@ -20,25 +20,25 @@ After setup, the device will consume power until the measurement starts and ends
 **Options:**
    -p                Set the interval of measurement in seconds. Default: 2. Correct values are:
    
-                     0 (400Hz),2,5,10,30,60,300 (5min), 600 (10min), 1800 (30min), 3600 (1h),
+    0 (400Hz),2,5,10,30,60,300 (5min), 600 (10min), 1800 (30min), 3600 (1h),
                      
-                     7200 (2h), 10800 (3h), 21600 (6h), 43200 (12h), 86400 (24h). Use -f to override these.
+    7200 (2h), 10800 (3h), 21600 (6h), 43200 (12h), 86400 (24h). Use -f to override these.
                      
-                     Warning: Overriding these values may prevent any measurement from occuring, or it may
+    Warning: Overriding these values may prevent any measurement from occuring, or it may
                      
-                     mess up timings without notice. Use this at your own risk, and always test it first.
+    mess up timings without notice. Use this at your own risk, and always test it first.
                      
 
    -c                Set the maximum data to be recorded. Default: 32000. Correct interval: [1,32000]
    
-                     Note: Reaching this number won't power off the device, it will just cause it to stop recording.
+    Note: Reaching this number won't power off the device, it will just cause it to stop recording.
                      
-                     Therefore, changing this value from 32000 is not recommended.
+    Therefore, changing this value from 32000 is not recommended.
                      
 
    -l                Sets the green led's blinking interval in seconds. Default: 10. Correct values: 10,20,30.
    
-                     Use -f to override, and set any value (again, at your own risk)
+    Use -f to override, and set any value (again, at your own risk)
                      
 
    -i                Instant - Start the measurement instantly after configuring the device. (Default: button press)
