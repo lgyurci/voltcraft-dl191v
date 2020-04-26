@@ -5,7 +5,7 @@ Installation: ./configure && make && make install . It's possible to run the pro
 
 **Usage:** vdl191v COMMAND [OPTIONS]
 
-PLease be aware, that running this program might (probably will) require higher permissions, than those that a simple mortal user usually posesses. Make sure these are granted (so run it as root, or give the neccesary permissions).
+Please be aware, that running this program might (probably will) require higher permissions, than those that a simple mortal user usually posesses. Make sure these are granted (so run it as root, or give the neccesary permissions).
 
 **Available commands:**
 
