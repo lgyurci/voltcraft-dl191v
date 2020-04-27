@@ -28,10 +28,10 @@ bool isNum(string pn){ //szám-e egy bizonyos szöveg, kicsit régimódi módsze
 }
 
 void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool force){ //ez nézi át a konfigurációt, hogy minden stimmel-e
-    if (datacount > 32000 || datacount < 1){
+    if (datacount > 32000 || datacount < 50){
         string ex;
-        if (force) ex = "Datacount out of range. Range: [1,32000], got: " + to_string(datacount) + " (could not force)"; //max 32000 adatot tud rögzíteni az eszköz
-        else ex = "Datacount out of range. Range: [1,32000], got: " + to_string(datacount);
+        if (force) ex = "Datacount out of range. Range: [50,32000], got: " + to_string(datacount) + " (could not force)"; //max 32000 adatot tud rögzíteni az eszköz
+        else ex = "Datacount out of range. Range: [50,32000], got: " + to_string(datacount);
         throw ex;
     }
     if (freq < 0){ //negatív számot még force-al sem engedek felkonfigurálni, mert nincs értelme
@@ -47,7 +47,7 @@ void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool forc
     }
     if (ledmode < 0){ //led villogásának periódusideje, a gyári alkalmazás csak 10-et, 20-at és 30-at enged beállítani, nem tudom hogy működik-e más, szóval engedem itt is, hogy -f-el felül lehessen bírálni
         string ex;
-        if (force) ex = "Led blink interval out of range. Range: [0,...], got: " + to_string(ledmode) + " (could not force)";
+        if (force) ex = "Led blink interval out of range. Range: [1,...], got: " + to_string(ledmode) + " (could not force)";
         else ex = "Led blink interval: bad value, got: " + to_string(freq);
         throw ex;
     }
@@ -92,11 +92,11 @@ int main(int argc, char *argv[]){
                   if (argv[i+1][0] != '-'){
                     output = argv[++i];
                   } else {
-                    cout << "Error: missing or bad argument for option '-o' (filename cannot start with '-')" << endl;
+                    cerr << "Error: missing or bad argument for option '-o' (filename cannot start with '-')" << endl;
                     return 2;
                   }
                 } else {
-                  cout << argmis("-o") << endl;
+                  cerr << argmis("-o") << endl;
                   return 2;
                 }
               } else if (strcmp(argv[i],"--no-header") == 0){
@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
               } else if (strcmp(argv[i],"--no-time-stamps") == 0) {
                 timestamps = false;
               } else {
-                cout << "Error: option '" << argv[i] << "' is unknown for command 'download'" << endl;
+                cerr << "Error: option '" << argv[i] << "' is unknown for command 'download'" << endl;
                 return 2;
               }
             }
@@ -114,7 +114,7 @@ int main(int argc, char *argv[]){
             try {
               vdl191v.download(&data,livec); //letöljük a konfigot (ez akár több másodperc is lehet, de ez a program legalább nem fagy miatta ki, a gyárival ellentétben)
             } catch(string ex){
-              cout << ex;
+              cerr << ex << endl;
               return 3;
             }
             logger lg(livec,data,timestamps,header,standard);
@@ -144,24 +144,24 @@ int main(int argc, char *argv[]){
                     stringstream s(argv[++i]);
                     s >> dco;
                   } else {
-                    cout << argbad("-c") << endl;
+                    cerr << argbad("-c") << endl;
                     return 2;
                   }
                 } else {
-                  cout << argmis("-c") << endl;
+                  cerr << argmis("-c") << endl;
                   return 2;
                 }
               } else if (strcmp(argv[i],"-p") == 0){
                 if (i+1 < argc){
                   if (isNum(argv[i+1])){
                     stringstream s(argv[++i]);
-                    s >> dco;
+                    s >> inte;
                   } else {
-                    cout << argbad("-p") << endl;
+                    cerr << argbad("-p") << endl;
                     return 2;
                   }
                 } else {
-                  cout << argmis("-p") << endl;
+                  cerr << argmis("-p") << endl;
                   return 2;
                 }
               } else if (strcmp(argv[i],"-i") == 0){
@@ -172,31 +172,31 @@ int main(int argc, char *argv[]){
                 if (i+1 < argc){
                   if (isNum(argv[i+1])){
                     stringstream s(argv[++i]);
-                    s >> dco;
+                    s >> ledmode;
                   } else {
-                    cout << argbad("-l") << endl;
+                    cerr << argbad("-l") << endl;
                     return 2;
                   }
                 } else {
-                  cout << argmis("-l") << endl;
+                  cerr << argmis("-l") << endl;
                   return 2;
                 }
               } else {
-                cout << "Error: option '" << argv[i] << "' is unknown for command 'setup'" << endl;
+                cerr << "Error: option '" << argv[i] << "' is unknown for command 'setup'" << endl;
                 return 2;
               }
             }
             try{
               validateConf(dco,inte,now,ledmode,force);
             } catch(string ex){
-              cout << ex << endl;
+              cerr << ex << endl;
               return 2;
             }
             voltcraft vdl191v(vid,pid);
             try{
               vdl191v.configure(dco,inte,now,ledmode,instant);
             } catch (string ex){
-              cout << ex << endl;
+              cerr << ex << endl;
               return 3;
             }
             return 0;
@@ -232,7 +232,7 @@ int main(int argc, char *argv[]){
               "                     Warning: Overriding these values may prevent any measurement from occuring, or it may\n" +
               "                     mess up timings without notice. Use this at your own risk, and always test it first.\n" +
               lend +
-              "   -c                Set the maximum data to be recorded. Default: 32000. Correct interval: [1,32000]\n" +
+              "   -c                Set the maximum data to be recorded. Default: 32000. Correct interval: [50,32000]\n" +
               "                     Note: Reaching this number won't power off the device, it will just cause it to stop recording.\n" +
               "                     Therefore, changing this value from 32000 is not recommended.\n" +
               lend +
@@ -248,10 +248,10 @@ int main(int argc, char *argv[]){
               cout << "This is getting a bit recursive, don't you think?" << endl; //kis easter-egg
               return 420;
             } else {
-              cout << "'" << argv[2] << "' is not a vdl191v command, so there is no help for it here." << endl;
+              cerr << "'" << argv[2] << "' is not a vdl191v command, so there is no help for it here." << endl;
             }
           } else {
-            cout << argv[1] << " is not a valid command. See 'vdl191v help'." << endl;
+            cerr << argv[1] << " is not a valid command. See 'vdl191v help'." << endl;
             return 1;
           }
         }
