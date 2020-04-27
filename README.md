@@ -1,6 +1,8 @@
 # vdl191v
 A small (but probably the only) implementation for Voltcraft DL-191V on linux
 
+WORK IN PROGRESS, but it's functional
+
 Installation: ./configure && make && make install . It's possible to run the program without installing it (actually, there is no strong reason to do the final step...).
 
 **Usage:** vdl191v COMMAND [OPTIONS]
@@ -55,8 +57,7 @@ After setup, the device will consume power until the measurement starts and ends
 
 Downloads the recorded data from the device.
 
-Note: This will stop the measurement.
-
+Note: This will stop the measurement. This operation can take up to 10s, depending on how much data has to be downloaded. After 10s, you may forcibly close the application. After exiting this way, unplug the datalogger, and plug it back in to reset connection. This is very rarely neccesary. Please submit an issue if this happens, including your settings, which you have used the datalogger with.
 
 **Options:**
 
