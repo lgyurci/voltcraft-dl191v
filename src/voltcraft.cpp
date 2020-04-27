@@ -224,30 +224,35 @@ int voltcraft::download(unsigned short int **results, confdata &cfdata) const{ /
     if (blokkremain % 64 != 0 && blokkremain != 0){
         rems++; //ha nem osztható pont, akkor értelemszerűen meg kell egyel növelnünk
     }
- /*   int total64;  //ez már nem kell
+    int total64; //Hány 64 byteos csomagba fér bele az összes adat
     if (downloadable.dat%64 != 0){
         total64 = downloadable.dat/64 + 1;
     } else {
         total64 = downloadable.dat;
-    }*/
-    unsigned short int *ddata = new unsigned short int [downloadable.dat/2]; //létrehozzuk a megfelelő méretű tömböt
+    }
+    unsigned short int *ddata = new unsigned short int [total64*32]; //létrehozzuk a megfelelő méretű tömböt
     for (int i = 0; i <= requestcount; i++){ //ahány kérést kell csinálnunk
         confsignal.id=0; //ez mindig nulla
         confsignal.d1=i; //ez azzal a számmal egyezik meg, ahanyadik blokkban vagyunk
         if (i == requestcount){ //ha az utolsó adatokat tartalmazó blokkban vagyunk
             confsignal.d2 = rems; //ennyiszer 64 byte adat kell tőle
             int db = blokkremain/512; //ennyi packetet fog elküldeni, mert 512 byte-os packeteket küld max (min 64-et)
-            int last = rems-db; //utolsó részben hány adat nem memóriaszemét
+            int last = (blokkremain%512)/64; //utolsó részben hányszor 64 kell
+            if ((blokkremain%512)%64 != 0){
+                last++;
+            }
             libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&dread,0); //szólunk neki, hogy leszednénk az adatokat
             libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,NULL,0); //szól hogy OK (02 00 00 header), annyira nem érdekes, de ki kell olvasni
             for (int j = 0; j < db; j++){
                 dread = 0;
                 libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),512,&dread,0); // kiolvassuk a többi packetet
+                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,NULL,0);
                 datain += dread/2;
             }
             if (last != 0){
                 dread = 0;
-                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),last*64,&dread,0); //kilvassuk az utolsó packetet, ha maradt még
+                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),last*64,&dread,0);//kiolvassuk az utolsó packetet, ha maradt még
+                libusb_bulk_transfer(dev_handle,130,NULL,0,NULL,0); 
                 datain += dread/2;
             }
         } else {
@@ -258,12 +263,11 @@ int voltcraft::download(unsigned short int **results, confdata &cfdata) const{ /
                 dread = 0;
                 int bread = 0;
                 libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),512,&dread,0); //adatkiolvasás
-                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,&bread,0); // valami szar, ezt nemtudom miért küldi el, de üres packet
+                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,&bread,0); // üres packet
                 datain += dread/2;
             }
         }
     }
-    libusb_bulk_transfer(dev_handle,130,NULL,0,NULL,0); //a végén küld egy üres packetet még, ezzel finoman a tudtunkra adva, hogy neki elég volt ebből a kapcsolatból
     libusb_control_transfer(dev_handle,64,2,4,0,NULL,0,0); //cleanup
     libusb_release_interface(dev_handle,0); //clenaup
     libusb_close(dev_handle); //cleanup
