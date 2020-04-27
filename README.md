@@ -33,7 +33,7 @@ After setup, the device will consume power until the measurement starts and ends
     mess up timings without notice. Use this at your own risk, and always test it first.
                      
 
-   -c                Set the maximum data to be recorded. Default: 32000. Correct interval: [1,32000]
+   -c                Set the maximum data to be recorded. Default: 32000. Correct interval: [50,32000]
    
     Note: Reaching this number won't power off the device, it will just cause it to stop recording.
                      
