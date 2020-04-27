@@ -24,6 +24,7 @@ Sets up device with the given config. It is possible, though not recommended to 
 After setup, the device will consume power until the measurement starts and ends. Set it up only before measurements.
 
 **Options:**
+
    -p                Set the interval of measurement in seconds. Default: 2. Correct values are:
    
     0 (400Hz), 2, 5, 10, 30, 60, 300 (5min), 600 (10min), 1800 (30min), 3600 (1h),
