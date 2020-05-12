@@ -5,7 +5,7 @@ int main(){}" > testlibusb.cpp
 if `g++ testlibusb.cpp -o /dev/null 2> /dev/null`; then
     mkdir run
     echo " all:
-	g++ src/main.cpp src/voltcraft.cpp src/logger.cpp -o run/vdl191v -lusb -lusb-1.0
+	g++ src/main.cpp src/voltcraft.cpp src/logger.cpp -o run/vdl191v -lusb-1.0
 install:
 	install run/vdl191v /bin
 clean:
