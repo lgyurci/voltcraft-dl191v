@@ -3,7 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip>
-
+//Lázár György, 2020
 using namespace std;
 
 logger::logger(confdata &config, unsigned short int *dat,bool timestamps, bool header, bool standard){

@@ -3,6 +3,7 @@
 #include "datastructs.h"
 #include <ctime>
 #include <iostream>
+//Lázár György, 2020
 
 using namespace std;
 

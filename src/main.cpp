@@ -7,7 +7,7 @@
 #include <sstream> //ezzel konvertálok szöveget számmá
 #define vid 4292 //vendor ID, valami gyártó azonosító szám izé, általában hexadecimálisban szokás megadni
 #define pid 60001 //product ID, az eszközt azonosítja
-
+//Lázár György, 2020
 using namespace std;
 
 string argmis(string opt){ //hiányzó argumentum hibaüzenet
@@ -28,10 +28,10 @@ bool isNum(string pn){ //szám-e egy bizonyos szöveg, kicsit régimódi módsze
 }
 
 void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool force){ //ez nézi át a konfigurációt, hogy minden stimmel-e
-    if (datacount > 32000 || datacount < 50){
+    if (datacount > 32000 || datacount < 500){
         string ex;
-        if (force) ex = "Datacount out of range. Range: [50,32000], got: " + to_string(datacount) + " (could not force)"; //max 32000 adatot tud rögzíteni az eszköz
-        else ex = "Datacount out of range. Range: [50,32000], got: " + to_string(datacount);
+        if (force) ex = "Datacount out of range. Range: [500,32000], got: " + to_string(datacount) + " (could not force)"; //max 32000 adatot tud rögzíteni az eszköz
+        else ex = "Datacount out of range. Range: [500,32000], got: " + to_string(datacount);
         throw ex;
     }
     if (freq < 0){ //negatív számot még force-al sem engedek felkonfigurálni, mert nincs értelme
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]){
             return 0;
           } else if (strcmp(argv[1],"setup") == 0){ //setup
             if (argc == 2) {
-              cout << "Warning: You did not specify any setup parameter. By continuing, the device will receive the default config. Are you sure? (y) ";
+              cout << "Warning: You did not specify any setup parameter. By continuing, the device will receive the default config. Are you sure? ";
               string inp;
               cin >> inp;
               if (inp != "y") return 0;
@@ -232,7 +232,7 @@ int main(int argc, char *argv[]){
               "                     Warning: Overriding these values may prevent any measurement from occuring, or it may\n" +
               "                     mess up timings without notice. Use this at your own risk, and always test it first.\n" +
               lend +
-              "   -c                Set the maximum data to be recorded. Default: 32000. Correct interval: [50,32000]\n" +
+              "   -c                Set the maximum data to be recorded. Default: 32000. Correct interval: [500,32000]\n" +
               "                     Note: Reaching this number won't power off the device, it will just cause it to stop recording.\n" +
               "                     Therefore, changing this value from 32000 is not recommended.\n" +
               lend +

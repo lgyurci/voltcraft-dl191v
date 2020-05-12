@@ -1,4 +1,5 @@
 #pragma once
+//Lázár György, 2020
 struct confdata { //Ezt az ötletet https://github.com/mildis/vdl120 -ből loptam (szerintem zseniális, én ezerszer bonyolultabban csináltam volna meg), aki egy szintén voltcraft hőmérsékletmérő vezérlését kódolta le. Ez a projekt a kommunikáció dekódolásában is sokat segített, máshoz viszont nem használtam fel (alapból az elavultabb, usb.h-t használja libusb helyett)
     const int startsignal = 206; //config start/stop jel, mindig 206 (hex: 0xce)
     int datacount = 32000; //Rögzítendő adatmennyiség maximális száma (1 mérési adat 2 byte-ban tárolódik, ami rendben van, mert 30V a műszer méréshatára, és így max 65V-ig tudna adatot tárolni)

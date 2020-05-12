@@ -3,10 +3,12 @@
 #include "datastructs.h"
 #include <ctime>
 #include <iostream> //string miatt kell
+//Lázár györgy, 2020
 
 class voltcraft{
     private:
         int v,p;
+        const int usb_timeout = 6000;
     public:
         voltcraft(int v /*Vendor id*/, int p /*Product id*/);
         ~voltcraft(); //nincs rá szükség, a cpp fájlban van hozzá több indoklás hogy miért

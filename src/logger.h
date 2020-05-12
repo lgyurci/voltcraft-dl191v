@@ -3,6 +3,7 @@
 #include <fstream>
 #include <iostream>
 #include <iomanip> // dátum kiírásához kell, hogy mondjuk 4 helyett 04 legyen
+//Lázár György, 2020
 
 using namespace std;
 
