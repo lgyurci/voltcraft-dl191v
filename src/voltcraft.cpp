@@ -59,8 +59,8 @@ int voltcraft::configure (int datacount, int freq, std::tm *time, int ledmode, b
         throw ex;
     }
     int ret1,ret2 = -1; //mivel nem ellenőrzöm a visszatérési értékeket, ezért nincs rá szükség, de egyszer hátha beleépítem még, addig foglalja a setup alatt itt a 4 byteot
-    ret1 = libusb_control_transfer(dev_handle,64,0,65535,0,NULL,0,0); // itt átvisszük az usb control adatokat, ez egy az egyben a windowsos szoftver által átküldött adatok mása
-    ret2 = libusb_control_transfer(dev_handle,64,2,2,0,NULL,0,0); // (és amúgy sem tudom hogy mit csinál pontosan, de enélkül nem működik)
+    ret1 = libusb_control_transfer(dev_handle,64,0,65535,0,NULL,0,usb_timeout); // itt átvisszük az usb control adatokat, ez egy az egyben a windowsos szoftver által átküldött adatok mása
+    ret2 = libusb_control_transfer(dev_handle,64,2,2,0,NULL,0,usb_timeout); // (és amúgy sem tudom hogy mit csinál pontosan, de enélkül nem működik)
 
     //ha idáig eljutottunk, akkor van egy élő kommunikációnk az eszközzel. Hurrá
     confdata cfg; //létrehozzuk a konfigot
@@ -135,8 +135,8 @@ int voltcraft::configure (int datacount, int freq, std::tm *time, int ledmode, b
     confsignal.d1 = 64;
     confsignal.d2 = 0;
     unsigned char returncode = 2;
-    int r1 = libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&written,0); //elküldjük neki, hogy konfigurációs beállításokat akarunk küldeni
-    int r2 = libusb_bulk_transfer(dev_handle,2,(unsigned char*)(&cfg),64,&written,0); // elküldjük neki a 64 byteos konfigurációs struktúrát
+    int r1 = libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&written,usb_timeout); //elküldjük neki, hogy konfigurációs beállításokat akarunk küldeni
+    int r2 = libusb_bulk_transfer(dev_handle,2,(unsigned char*)(&cfg),64,&written,usb_timeout); // elküldjük neki a 64 byteos konfigurációs struktúrát
     if (r1 != 0 | r2 != 0){
         string ex = "Bulk write failed"; //Arra utal, hogy valamit elcsesztem a kódban, nem a felhasználó hibája (kivételesen, minden mást simán ráfogok)
         libusb_release_interface(dev_handle,0);
@@ -144,7 +144,7 @@ int voltcraft::configure (int datacount, int freq, std::tm *time, int ledmode, b
         libusb_exit(ctx);
         throw ex;
     }
-    if (libusb_bulk_transfer(dev_handle, 130, &returncode, 1, &written, 0) != 0){ //jó esetben az eszköz válaszol hogy OK (ezt egy 8 egyesből álló byte-tal teszi)
+    if (libusb_bulk_transfer(dev_handle, 130, &returncode, 1, &written, usb_timeout) != 0){ //jó esetben az eszköz válaszol hogy OK (ezt egy 8 egyesből álló byte-tal teszi)
         string ex = "Bulk read failed"; //mint a write-nál
         libusb_release_interface(dev_handle,0);
         libusb_close(dev_handle);
@@ -198,8 +198,8 @@ int voltcraft::download(unsigned short int **results, confdata &cfdata) const{ /
         throw ex;
     }
     int ret1,ret2 = -1;
-    ret1 = libusb_control_transfer(dev_handle,64,0,65535,0,NULL,0,0); //cleanup, nem tudom hogy szükséges-e, de a windowsos program is elküldi
-    ret2 = libusb_control_transfer(dev_handle,64,2,2,0,NULL,0,0);
+    ret1 = libusb_control_transfer(dev_handle,64,0,65535,0,NULL,0,usb_timeout);
+    ret2 = libusb_control_transfer(dev_handle,64,2,2,0,NULL,0,usb_timeout);
 
 
     //na innen különbözik
@@ -210,11 +210,13 @@ int voltcraft::download(unsigned short int **results, confdata &cfdata) const{ /
     confsignal.id = 0;
     confsignal.d1 = 16;
     confsignal.d2 = 1;
-    libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&dread,0); // szólunk neki, hogy mutassa meg, milye van
-    libusb_bulk_transfer(dev_handle,130,(unsigned char*)&downloadable,3,&dread,0); //küld egy headert, jó esetben az első byteban 02-vel
-    libusb_bulk_transfer(dev_handle,130,(unsigned char*)&cfdata,64,&dread,0); //elküldi a konfigurációs beállításait, ebben lényeges a frekvencia, az idő, és hogy hány adatot rögzített
-    libusb_bulk_transfer(dev_handle,130,NULL,0,NULL,0); //a konfiguráció letöltése állítja le egyben a mérést. A konfig letöltése után az eszköz még küld egy üres packetet, mert olyan kedve van olyankor
+    libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&dread,usb_timeout); // szólunk neki, hogy mutassa meg, milye van
+    libusb_bulk_transfer(dev_handle,130,(unsigned char*)&downloadable,3,&dread,usb_timeout); //küld egy headert, jó esetben az első byteban 02-vel
+    libusb_bulk_transfer(dev_handle,130,(unsigned char*)&cfdata,64,&dread,usb_timeout); //elküldi a konfigurációs beállításait, ebben lényeges a frekvencia, az idő, és hogy hány adatot rögzített
+    libusb_bulk_transfer(dev_handle,130,NULL,0,NULL,usb_timeout); //a konfiguráció letöltése állítja le egyben a mérést. A konfig letöltése után az eszköz még küld egy üres packetet, mert olyan kedve van olyankor
 
+//    downloadable.dat = 64000;
+//    cfdata.idk = 32000;
     downloadable.dat = cfdata.idk*2; //inkább dolgozok ebből, mert megbízhatóbbnak tűnik. A headerben valahogy elcsúszik a bytecode, és nincs kedvem kinyomozni, és amúgy meg mindegy
     int requestcount = downloadable.dat/4096; //hányszor kell tőle adatot kérnünk (max 4096 byte-ot tud elküldeni egy kéréssel)
     int blokkremain = downloadable.dat % 4096; //mennyi adat lóg ki a 4kB-os blokkokból
@@ -241,34 +243,34 @@ int voltcraft::download(unsigned short int **results, confdata &cfdata) const{ /
             if ((blokkremain%512)%64 != 0){
                 last++;
             }
-            libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&dread,0); //szólunk neki, hogy leszednénk az adatokat
-            libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,NULL,0); //szól hogy OK (02 00 00 header), annyira nem érdekes, de ki kell olvasni
+            libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&dread,usb_timeout); //szólunk neki, hogy leszednénk az adatokat
+            libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,NULL,usb_timeout); //szól hogy OK (02 00 00 header), annyira nem érdekes, de ki kell olvasni
             for (int j = 0; j < db; j++){
                 dread = 0;
-                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),512,&dread,0); // kiolvassuk a többi packetet
-                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,NULL,0);
+                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),512,&dread,usb_timeout); // kiolvassuk a többi packetet
+                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,NULL,usb_timeout);
                 datain += dread/2;
             }
             if (last != 0){
                 dread = 0;
-                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),last*64,&dread,0);//kiolvassuk az utolsó packetet, ha maradt még
-                libusb_bulk_transfer(dev_handle,130,NULL,0,NULL,0); 
+                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),last*64,&dread,usb_timeout);//kiolvassuk az utolsó packetet, ha maradt még
+                libusb_bulk_transfer(dev_handle,130,NULL,0,NULL,usb_timeout); 
                 datain += dread/2;
             }
         } else {
             confsignal.d2 = 64;
-            libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&dread,0); //itt ugyan az történik mint előbb, csak itt garantáltan mindig 8-szor 512 byte-os packetek fognak érkezni sorban
-            libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,NULL,0); //válasz
+            libusb_bulk_transfer(dev_handle,2,(unsigned char*)&confsignal,3,&dread,usb_timeout); //itt ugyan az történik mint előbb, csak itt garantáltan mindig 8-szor 512 byte-os packetek fognak érkezni sorban
+            libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,NULL,usb_timeout); //válasz
             for (int j = 0; j < 8; j++){
                 dread = 0;
                 int bread = 0;
-                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),512,&dread,0); //adatkiolvasás
-                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,&bread,0); // üres packet
+                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&(ddata[datain]),512,&dread,usb_timeout); //adatkiolvasás
+                libusb_bulk_transfer(dev_handle,130,(unsigned char*)&response,3,&bread,usb_timeout); // üres packet
                 datain += dread/2;
             }
         }
     }
-    libusb_control_transfer(dev_handle,64,2,4,0,NULL,0,0); //cleanup
+    libusb_control_transfer(dev_handle,64,2,4,0,NULL,0,usb_timeout); //cleanup
     libusb_release_interface(dev_handle,0); //clenaup
     libusb_close(dev_handle); //cleanup
     libusb_exit(ctx);//cleanup
