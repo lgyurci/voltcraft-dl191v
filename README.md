@@ -84,7 +84,7 @@ Note: This will stop the measurement. This operation can take up to 10s, dependi
 
 This software is as free as it gets, licensed under the most permissive (sensible) open source license - the unlicense. In summary, you may use, sell, and modify the source code in any way you'd like. For more information, please read the LICENSE file.
 
-Also please note, that while my code (and everyone's who contirbuted, but at the time of writing there aren't any contributors :( ) might come with a permissive license, the used dependencys (libusb) might not. Therefore, you may sell my modified code, but you probably can't do the same with the compiled binary (but idk, I'm far from a lawyer).
+Also please note, that while my code (and everyone's who contirbuted, but at the time of writing there aren't any contributors :( ) might come with a permissive license, the used dependencies (libusb) might not. Therefore, you may sell my modified code, but you probably can't do the same with the compiled binary (but idk, I'm far from a lawyer).
 
 One more thing, which is more like a personal request. If you find my code useful in any way, please hit me up, I would be glad to hear that this is useful for someone else in the world.
 
