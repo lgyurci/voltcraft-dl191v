@@ -11,7 +11,7 @@ install:
 uninstall:
 	rm /usr/bin/vdl191v
 clean:
-	rm -rf run" > makefile
+	rm -rf run" > Makefile
 else
     echo "Missing dependency:"
     echo "libusb-1.0-0-dev"
