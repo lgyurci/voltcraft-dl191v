@@ -5,6 +5,7 @@ This project definitely needs improvements, however, it's completely functional.
 
 ## Dependencies
 - libusb 1.0 (dev)
+- g++
 
 ## Installation 
 ```javascript codeblock1
@@ -82,6 +83,15 @@ Note: This will stop the measurement. This operation can take up to 10s, dependi
    --no-header       Disables header in output file (first line)
    
    --no-timestamps   Disables the time row completely
+```
+## Examples
+- You'd like to setup a measurement with 2s sampling period:
+```javascript codeblock5
+vdl191v setup -p 2
+```
+- You'd like to download the measurement data into the current folder using the default `data.dsv` file:
+```javascript codeblock5
+vdl191v download
 ```
 ## Copying
 
