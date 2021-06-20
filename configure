@@ -16,6 +16,7 @@ else
     echo "Missing dependency:"
     echo "libusb-1.0-0-dev"
     echo "aborted"
+    return 1
 fi
 rm testlibusb.cpp
 
