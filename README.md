@@ -20,7 +20,7 @@ Please be aware, that running this program might (probably will) require higher 
 
 setup - Sets up the datalogger with the given settings. Avaiable options: -c,-p,-l,-i,-f
 
-download - Downloads data from the device. Avaiable options: -s,-o,--no-header,--no-time-stamps
+download - Downloads data from the device. Available options: -s,-o,--no-header,--no-time-stamps
 
 help - Without arguments: display this message. With argument: display help for the given command
 
