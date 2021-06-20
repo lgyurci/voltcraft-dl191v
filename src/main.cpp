@@ -1,24 +1,24 @@
 #include <iostream>
-#include "voltcraft.h" //ez kezeli az eszközt
-#include "logger.h" //ez írja ki a fájlba az adatokat a perzisztens tároláshoz való operátor átdefiniálás követelményt teljesítve
+#include "voltcraft.h" //this handles the device
+#include "logger.h" //this writes the downloaded data to file
 #include <ctime>
-#include <string.h> //strcmp miatt kell, itt szerintem egyszerűbb hazsnálni
+#include <string.h> //for strcmp
 #include <fstream>
-#include <sstream> //ezzel konvertálok szöveget számmá
-#define vid 4292 //vendor ID, valami gyártó azonosító szám izé, általában hexadecimálisban szokás megadni
-#define pid 60001 //product ID, az eszközt azonosítja
+#include <sstream> //to make converting string to int/float easy
+#define vid 4292 //IMPORTANT: VENDOR ID If you have a slightly different device, and you'd like to try this software with it, change this. Find this value using lsusb
+#define pid 60001 //PRODUCT ID like the vendor id
 //Lázár György, 2020
 using namespace std;
 
-string argmis(string opt){ //hiányzó argumentum hibaüzenet
+string argmis(string opt){ //Missing argument error message
   return (string) "Error: missing argument for option '" + opt + "'";
 }
 
-string argbad(string opt){ //rossz argumentum hibaüzenet
+string argbad(string opt){ //Bad argument error message
   return (string) "Error: bad argument for option '" + opt + "'";
 }
 
-bool isNum(string pn){ //szám-e egy bizonyos szöveg, kicsit régimódi módszer
+bool isNum(string pn){ //Can a given string be interpreted as a number? Old fashioned way
   for (int i = 0; i < pn.length(); i++){
     if (pn[i] < 48 || pn[i] > 57){
       return false;
@@ -27,25 +27,25 @@ bool isNum(string pn){ //szám-e egy bizonyos szöveg, kicsit régimódi módsze
   return true;
 }
 
-void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool force){ //ez nézi át a konfigurációt, hogy minden stimmel-e
+void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool force){ //This checks the configuration for errors
     if (datacount > 32000 || datacount < 500){
         string ex;
-        if (force) ex = "Datacount out of range. Range: [500,32000], got: " + to_string(datacount) + " (could not force)"; //max 32000 adatot tud rögzíteni az eszköz
+        if (force) ex = "Datacount out of range. Range: [500,32000], got: " + to_string(datacount) + " (could not force)"; //max 32000 datapoints can be recorded by the dl-191v
         else ex = "Datacount out of range. Range: [500,32000], got: " + to_string(datacount);
         throw ex;
     }
-    if (freq < 0){ //negatív számot még force-al sem engedek felkonfigurálni, mert nincs értelme
+    if (freq < 0){ //Negative numbers are not accepted, even if the force option is given
         string ex;
         if (force) ex = "Measure interval out of range. Range: [0,...], got: " + to_string(freq) + " (could not force)";
         else ex = "Measuring interval: bad value, got: " + to_string(freq);
         throw ex;
     }
     if (freq != 0 && freq != 2 && freq != 5 && freq != 10 && freq != 30 && freq != 60 && freq != 300 && freq != 600 && freq != 1800 && freq != 3600 && freq != 7200 && freq != 10800 && freq != 21600 && freq != 43200 && freq != 86400 && !force){
-        string ex; //igen, ez így elég csúnyán néz ki. Ezek az eredeti alkalmazásban beállítható értékek. Néhány más érték is működik, de néhány nem. Mindenki tesztelje ki magának
+        string ex; //Yeah, this is pretty ugly. These values definitely work, others may or may not.
         ex = "Measuring interval: bad value, got: " + to_string(freq) + " - use -f to override, and if you like living on the edge";
         throw ex;
     }
-    if (ledmode < 0){ //led villogásának periódusideje, a gyári alkalmazás csak 10-et, 20-at és 30-at enged beállítani, nem tudom hogy működik-e más, szóval engedem itt is, hogy -f-el felül lehessen bírálni
+    if (ledmode < 0){ //Led's blinking period. The original software only lets you set 10, 20, or 30, so I'm doing the same. Can be overridden with -f
         string ex;
         if (force) ex = "Led blink interval out of range. Range: [1,...], got: " + to_string(ledmode) + " (could not force)";
         else ex = "Led blink interval: bad value, got: " + to_string(freq);
@@ -61,7 +61,7 @@ void validateConf(int datacount, int freq, std::tm *time, int ledmode, bool forc
 int main(int argc, char *argv[]){
 
         string lend = "\n";
-        string help =  //help menü
+        string help =  //help menu
         lend +
         (string) "Usage: vdl191v COMMAND [OPTIONS]\n" + 
         lend + 
@@ -79,12 +79,12 @@ int main(int argc, char *argv[]){
           cout << help << endl;
           return 1;
         } else {
-          if (strcmp(argv[1],"download") == 0){ //ha letölteni akar a felhasználó
+          if (strcmp(argv[1],"download") == 0){ //if the user wants to download the data
             bool standard = false;
             bool header = true;
             bool timestamps = true;
             string output = "data.dsv"; 
-            for (int i = 2; i < argc; i++){ //értelmezzük az argumentumokat. Ez is csak mechanikus gépelés
+            for (int i = 2; i < argc; i++){ //interpreting the arguments
               if (strcmp(argv[i],"-s") == 0){
                 standard = true;
               } else if (strcmp(argv[i],"-o") == 0){
@@ -108,11 +108,11 @@ int main(int argc, char *argv[]){
                 return 2;
               }
             }
-            voltcraft vdl191v(vid,pid); //ha eddig minden ok, akkor jöhet a lényeg
+            voltcraft vdl191v(vid,pid); //if everything was alright
             confdata livec;
             unsigned short int *data;
             try {
-              vdl191v.download(&data,livec); //letöljük a konfigot (ez akár több másodperc is lehet, de ez a program legalább nem fagy miatta ki, a gyárival ellentétben)
+              vdl191v.download(&data,livec); //try to download the data from the device
             } catch(string ex){
               cerr << ex << endl;
               return 3;
@@ -120,7 +120,7 @@ int main(int argc, char *argv[]){
             logger lg(livec,data,timestamps,header,standard);
             ofstream f;
             f.open(output);
-            f << lg; //kiírjuk file-ba a letöltött adatokat
+            f << lg; //save the downloaded data to file
             f.close();
             return 0;
           } else if (strcmp(argv[1],"setup") == 0){ //setup
@@ -131,13 +131,13 @@ int main(int argc, char *argv[]){
               if (inp != "y") return 0;
             }
             bool force = false;
-            int dco = 32000; //alapértelmezések
+            int dco = 32000; //defaults
             int inte = 2;
             time_t t = time(0);
             tm* now = localtime(&t);
             int ledmode = 10;
             bool instant = false;
-            for (int i = 2; i < argc; i++){ // argumentumok beolvasása és értelmezése
+            for (int i = 2; i < argc; i++){ // Reading arguments and interpreting them
               if (strcmp(argv[i],"-c") == 0){
                 if (i+1 < argc){
                   if (isNum(argv[i+1])){
@@ -200,7 +200,7 @@ int main(int argc, char *argv[]){
               return 3;
             }
             return 0;
-          } else if (strcmp(argv[1],"help") == 0 || strcmp(argv[1],"-h") == 0 || strcmp(argv[1],"--help") == 0){ //help menü
+          } else if (strcmp(argv[1],"help") == 0 || strcmp(argv[1],"-h") == 0 || strcmp(argv[1],"--help") == 0){ //help menu
             if (argc == 2){
               cout << help << endl;
               return 0;
@@ -245,7 +245,7 @@ int main(int argc, char *argv[]){
               cout << shelp << endl;
               return 0;
             } else if (strcmp(argv[2],"help") == 0){
-              cout << "This is getting a bit recursive, don't you think?" << endl; //kis easter-egg
+              cout << "This is getting a bit recursive, don't you think?" << endl; //small easter egg
               return 420;
             } else {
               cerr << "'" << argv[2] << "' is not a vdl191v command, so there is no help for it here." << endl;
