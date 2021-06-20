@@ -7,7 +7,9 @@ if `g++ testlibusb.cpp -o /dev/null 2> /dev/null`; then
     echo " all:
 	g++ src/main.cpp src/voltcraft.cpp src/logger.cpp -o run/vdl191v -lusb-1.0
 install:
-	install run/vdl191v /bin
+	install run/vdl191v /usr/bin
+uninstall:
+	rm /usr/bin/vdl191v
 clean:
 	rm -rf run" > makefile
 else
