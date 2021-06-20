@@ -3,6 +3,9 @@ This is a small and open source software for linux, to handle the Voltcraft DL-1
 
 This project definitely needs improvements, however, it's completely functional. If you have a similar logger and you'd like to help, I would be glad to hear about you.
 
+## Dependencies
+- libusb 1.0 (dev)
+
 ## Installation 
 ```javascript codeblock1
 ./configure && make
