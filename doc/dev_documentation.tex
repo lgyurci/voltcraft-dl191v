@@ -1,0 +1,53 @@
+\documentclass[a4paper,12pt]{article}
+
+%\usepackage[magyar]{babel}
+\usepackage{t1enc}
+\usepackage[utf8]{inputenc} 
+\usepackage{lmodern}
+\usepackage[pdftex]{graphicx} 
+\usepackage[lflt]{floatflt} 
+\usepackage{epstopdf} 
+\usepackage{amsmath,amssymb} 
+\usepackage{icomma}
+\usepackage{array} 
+\usepackage[unicode,colorlinks]{hyperref} 
+\usepackage{fullpage} 
+\usepackage{booktabs}
+\usepackage{hhline}
+\hypersetup{pdfstartview=FitH}
+
+\title{\bf Management software for the Voltcraft DL-191V voltage meter/datalogger}
+\author{ Lázár György, 2020\\
+}
+\date{2021.\ 07.\ 14.}
+
+\widowpenalty=10000 \clubpenalty=10000
+
+\newcommand{\tiz}{
+\mathchar"013B
+}
+\newcommand{\me}[1]{
+\,\mathrm{#1}
+}
+
+\newcommand{\cf}{
+\me{^\circ C}
+}
+
+\newcommand{\gauss}[2]{
+\left(\dfrac{\partial #1}{\partial #2}\right)^2\cdot (\Delta #2)^2
+}
+\newcommand{\deri}[2]{\frac{\mathrm{d}#1}{\mathrm{d}#2}
+}
+\newcommand{\E}[1]{\cdot 10^{#1}}
+\begin{document}
+
+
+\maketitle
+
+\begin{abstract}
+This document summarizes the main principles of handling the logger. Certain encodings and their functions are documented here. For more information and examples (using libusb), please refer to the source code.
+\end{abstract}
+
+
+\end{document}

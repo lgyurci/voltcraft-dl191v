@@ -1,2 +1,6 @@
  .*
 tests/*
+doc/dev_documentation.aux
+doc/dev_documentation.out
+doc/dev_documentation.log
+doc/dev_documentation.synctex.gz
