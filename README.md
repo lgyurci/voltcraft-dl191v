@@ -69,16 +69,14 @@ After setup, the device will consume power until the measurement starts and ends
 
 ### download
 
-Downloads the recorded data from the device.
+Downloads the recorded data from the device. By default, it prints it on the standard output.
 
 Note: This will stop the measurement. This operation can take up to 10s, depending on how much data has to be downloaded. After 10s, you may forcibly close the application. After exiting this way, unplug the datalogger, and plug it back in to reset connection. This is very rarely neccesary. Please submit an issue if this happens, including your settings, which you have used the datalogger with.
 
 #### download options
 ```javascript codeblock4
 
-   -s                Print output to stdout as well
-   
-   -o                Specify output file. Default: data.dsv
+   -o                Redirect output to the specified file instead.
    
    --no-header       Disables header in output file (first line)
    
