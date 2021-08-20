@@ -87,9 +87,9 @@ Note: This will stop the measurement. This operation can take up to 10s, dependi
 ```javascript codeblock5
 vdl191v setup -p 2
 ```
-- You'd like to download the measurement data into the current folder using the default `data.dsv` file:
+- You'd like to download the measurement data into the `data.dsv` file:
 ```javascript codeblock5
-vdl191v download
+vdl191v download -o data.dsv
 ```
 ## Copying
 
