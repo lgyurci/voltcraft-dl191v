@@ -14,9 +14,9 @@ class logger{
         int l;
         bool ts;
         bool hr;
-        bool sd;
     public:
-        logger(confdata &config, unsigned short int *dat,bool timestamps, bool header, bool standard);
+        logger(confdata &config, unsigned short int *dat,bool timestamps, bool header);
         ~logger();
-        friend ofstream &operator <<(ofstream &of,const logger &log); //This overloaded operator writes the data to the file. 
+        friend ofstream &operator <<(ofstream &of,const logger &log); //This overloaded operator writes the data to the file.
+	friend ostream &operator <<(ostream &of,const logger &log); 
 };
