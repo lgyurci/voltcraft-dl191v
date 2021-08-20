@@ -80,17 +80,19 @@ int main(int argc, char *argv[]){
           return 1;
         } else {
           if (strcmp(argv[1],"download") == 0){ //if the user wants to download the data
-            bool standard = false;
+            bool standard = true;
             bool header = true;
             bool timestamps = true;
             string output = "data.dsv"; 
             for (int i = 2; i < argc; i++){ //interpreting the arguments
               if (strcmp(argv[i],"-s") == 0){
-                standard = true;
+                cerr << "Deprecated option. The program now defaults to stdout unless -o is specified. No data was downloaded." << endl;
+		return 5;
               } else if (strcmp(argv[i],"-o") == 0){
                 if (argc > i+1){
                   if (argv[i+1][0] != '-'){
                     output = argv[++i];
+		    standard = false;
                   } else {
                     cerr << "Error: missing or bad argument for option '-o' (filename cannot start with '-')" << endl;
                     return 2;
@@ -109,7 +111,7 @@ int main(int argc, char *argv[]){
               }
             }
             voltcraft vdl191v(vid,pid); //if everything was alright
-            confdata livec;
+            confdata livec; //`live` config on device
             unsigned short int *data;
             try {
               vdl191v.download(&data,livec); //try to download the data from the device
@@ -117,11 +119,15 @@ int main(int argc, char *argv[]){
               cerr << ex << endl;
               return 3;
             }
-            logger lg(livec,data,timestamps,header,standard);
-            ofstream f;
-            f.open(output);
-            f << lg; //save the downloaded data to file
-            f.close();
+            logger lg(livec,data,timestamps,header);
+	    if (standard){
+	      cout << lg;
+	    } else {
+              ofstream f;
+              f.open(output);
+              f << lg; //save the downloaded data to file
+              f.close();
+	    }
             return 0;
           } else if (strcmp(argv[1],"setup") == 0){ //setup
             if (argc == 2) {
@@ -212,8 +218,7 @@ int main(int argc, char *argv[]){
               "Note: This will stop the measurement.\n" +
               lend +
               "Options:\n" +
-              "   -s                Print output to stdout as well\n" +
-              "   -o                Specify output file. Default: data.dsv\n" +
+              "   -o                Redirect output to the specified file instead.\n" +
               "   --no-header       Disables header in output file (first line)\n" +
               "   --no-timestamps   Disables the time row completely";
               cout << dhelp << endl;
