@@ -91,6 +91,9 @@ vdl191v setup -p 2
 ```javascript codeblock5
 vdl191v download -o data.dsv
 ```
+## Limitations
+- This program can only handle one device at a given time
+- You cannot set alarms (yet?)
 ## Copying
 
 This software is as free as it gets, licensed under the most permissive (sensible) open source license - the unlicense. In summary, you may use, sell, and modify the source code in any way you'd like. For more information, please read the LICENSE file.
