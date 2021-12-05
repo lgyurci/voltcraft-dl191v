@@ -1,4 +1,4 @@
-# Management software for the Voltcraft DL-191V data logger
+# Linux software for the Voltcraft DL-191V data logger
 This is a small and open source software for Linux, to handle the Voltcraft DL-191V voltage meter.
 
 This project definitely needs improvements, however, it's completely functional. If you have a similar logger and you'd like to help, I would be glad to hear about you.
